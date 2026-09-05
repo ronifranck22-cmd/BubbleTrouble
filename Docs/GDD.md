@@ -9,7 +9,7 @@
 | **Engine** | Unity 6.3 LTS (`6000.3.20f1`), 2D, URP, Legacy Input Manager (`Input.GetKey`) |
 | **Orientation** | Landscape, fixed single-screen playfield — camera never moves |
 | **Session length** | 30 seconds – 10 minutes |
-| **Document version** | v1.2 — 2026-09-05 |
+| **Document version** | v1.3 — 2026-09-05 |
 
 > Written before implementation. Only the folder structure and a few placeholder art assets exist so far. Values marked as not decided yet will be filled in once the game is playable.
 
@@ -30,8 +30,10 @@ A single player stands at the bottom of a fixed playfield, moving left/right and
 ## 2. Reference & Inspiration
 
 - **Primary reference:** *Bubble Trouble* / *Bubble Struggle* (Kranx Productions, ~2000). Playable copies: [rebubbled.com/play/bs1_html](https://www.rebubbled.com/play/bs1_html), [miniclipoldgames.com/en/bubble-struggle](https://miniclipoldgames.com/en/bubble-struggle).
-- **Taking:** the split-on-hit bubbles, the single-screen arena, the single-shot weapon, a level sequence with bigger starting bubbles each time, and a win screen after the last level.
-- **Not taking:** the original character art (copyright belongs to the original developers, see §6), the harpoon trail (§8.2 polish), breakable terrain, two-player mode.
+- **Taking:** the split-on-hit bubble behaviour and bounce physics, the single-screen arena, the single-shot upward weapon, a level sequence with bigger/more starting bubbles each round, and a win screen after the last level.
+- **Not taking:** breakable terrain, and two-player mode — this build is solo-only from the start.
+
+(Art asset sourcing — including the player character and the original's harpoon-trail visual — is a licensing question, not a design one, and is covered in §6 and §8.2.)
 
 ---
 
@@ -101,11 +103,12 @@ Uses the Legacy Input Manager (`Input.GetKey`), not the newer Input System packa
 
 ## 5. Screens & UI
 
-No title screen or menu — the game opens straight into `Playing`.
+A short Start screen before play begins — no settings menu beyond that.
 
-1. **Playing (HUD)** — score, lives, level number. Plain UI Text, top of screen.
-2. **GameOver** — final score, high score (marks a new high score if beaten), restart prompt.
-3. **Win** — shown after the last level. Same info as GameOver.
+1. **Start** — game title and a "press Space to start" prompt. No other menu.
+2. **Playing (HUD)** — score, lives, level number. Plain UI Text, top of screen.
+3. **GameOver** — final score, high score (marks a new high score if beaten), restart prompt.
+4. **Win** — shown after the last level. Same info as GameOver.
 
 **Canvas:** `Scale With Screen Size`, not `Constant Pixel Size` — so the UI doesn't break at a different resolution.
 
@@ -120,7 +123,7 @@ No title screen or menu — the game opens straight into `Playing`.
 | Bubble sprite | Done — placeholder | Generated locally (solid circle, no external source) |
 | Projectile sprite | Done — placeholder | Generated locally (rounded bar; not yet arrowhead-shaped) |
 | Background | Done | "Sky" by wipics, [OpenGameArt.org](https://opengameart.org/content/sky-3), **CC0** (public domain) |
-| Player character | In progress | Sourcing a properly-licensed sprite. Placeholder in use so implementation isn't blocked |
+| Player character | In progress | Planned: Kenney "Shape Characters" pack — [kenney.nl/assets/shape-characters](https://kenney.nl/assets/shape-characters), **CC0**, 100 geometric characters. Need to confirm it has the front/back/side views we want once downloaded. Placeholder in use until then |
 | SFX / Music | Not started | Planned: CC0 sources (Kenney.nl / OpenGameArt) |
 
 **Technical art rules:** import sprites as `Sprite (2D and UI)`, not `Default`. Same Pixels Per Unit for all bubble sizes, so one sprite works for all three via `Transform` scale.
@@ -186,6 +189,7 @@ Also used, but not required: `ScriptableObject` data (`BubbleConfig`, `LevelConf
 
 ### 8.1 Core — must exist for the game to be submittable
 
+- [ ] Start screen with a "press to begin" prompt
 - [ ] Player horizontal movement, clamped to screen
 - [ ] Shoot: single pooled projectile, straight up, destroyed at ceiling
 - [ ] Bubble physics (bounce off walls/floor via `Rigidbody2D` + `Physics Material 2D`)
@@ -224,3 +228,4 @@ Also used, but not required: `ScriptableObject` data (`BubbleConfig`, `LevelConf
 | v1.0 | 2026-08-31 | Initial document, written before implementation. Restructured to match the course's example GDD format. |
 | v1.1 | 2026-09-05 | Aligned to the course's official generic GDD template: trimmed High Concept to the 60-word limit, and expanded the Controls table with Gamepad/Touch columns and explicit input edge-case rules. |
 | v1.2 | 2026-09-05 | Filled in Engine (Unity 6.3 LTS, URP) from the actual project. Trimmed Target platform and Session length. Simplified language throughout. Parameters table now uses "Value" (blank where not decided) instead of "Starting value"/`TBD`. Added a Canvas Scaler note to §5. |
+| v1.3 | 2026-09-05 | Reworded §2 Taking/Not-taking to focus on gameplay mechanics, not art licensing (moved to §6). Added a Start screen to §5 and §8.1. Named a concrete CC0 art source for the player character in §6 (Kenney "Shape Characters"). |
