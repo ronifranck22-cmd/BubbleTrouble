@@ -1,4 +1,4 @@
-# Game Design Document — *Bubble Trouble: Retro Remake*
+# Game Design Document — *Bubble Trouble*
 
 | | |
 |---|---|
