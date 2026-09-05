@@ -9,7 +9,7 @@
 | **Engine** | Unity 6.3 LTS (`6000.3.20f1`), 2D, URP, Legacy Input Manager (`Input.GetKey`) |
 | **Orientation** | Landscape, fixed single-screen playfield — camera never moves |
 | **Session length** | 30 seconds – 10 minutes |
-| **Document version** | v1.3 — 2026-09-05 |
+| **Document version** | v1.0 — 2026-09-05 |
 
 > Written before implementation. Only the folder structure and a few placeholder art assets exist so far. Values marked as not decided yet will be filled in once the game is playable.
 
