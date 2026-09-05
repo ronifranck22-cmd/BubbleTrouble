@@ -225,7 +225,5 @@ Also used, but not required: `ScriptableObject` data (`BubbleConfig`, `LevelConf
 
 | Version | Date | Change |
 |---|---|---|
-| v1.0 | 2026-08-31 | Initial document, written before implementation. Restructured to match the course's example GDD format. |
-| v1.1 | 2026-09-05 | Aligned to the course's official generic GDD template: trimmed High Concept to the 60-word limit, and expanded the Controls table with Gamepad/Touch columns and explicit input edge-case rules. |
-| v1.2 | 2026-09-05 | Filled in Engine (Unity 6.3 LTS, URP) from the actual project. Trimmed Target platform and Session length. Simplified language throughout. Parameters table now uses "Value" (blank where not decided) instead of "Starting value"/`TBD`. Added a Canvas Scaler note to §5. |
-| v1.3 | 2026-09-05 | Reworded §2 Taking/Not-taking to focus on gameplay mechanics, not art licensing (moved to §6). Added a Start screen to §5 and §8.1. Named a concrete CC0 art source for the player character in §6 (Kenney "Shape Characters"). |
+| v1.0 | 2026-08-31 | Initial document, written before implementation. |
+
