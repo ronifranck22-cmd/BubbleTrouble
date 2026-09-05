@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Working title** | Bubble Trouble: Retro Remake (`BubbleTrouble-Unity`) |
-| **Team** | Roni Franck (`[ADD YOUR ID NUMBER]`) — solo |
+| **Team** | Roni Franck |
 | **Genre** | Arcade / physics bubble-shooter / single-screen split-and-clear |
 | **Target platform** | PC (macOS), standalone |
 | **Engine** | Unity 6.3 LTS (`6000.3.20f1`), 2D, URP, Legacy Input Manager (`Input.GetKey`) |
