@@ -1,15 +1,15 @@
-# Game Design Document — *Bubble Trouble: Retro Remake*
+# Game Design Document — *Bubble Trouble*
 
 | | |
 |---|---|
-| **Working title** | Bubble Trouble: Retro Remake (`BubbleTrouble-Unity`) |
+| **Working title** | Bubble Trouble: Retro Remake (`BubbleTrouble`) |
 | **Team** | Roni Franck |
 | **Genre** | Arcade / physics bubble-shooter / single-screen split-and-clear |
 | **Target platform** | PC (macOS), standalone |
 | **Engine** | Unity 6.3 LTS (`6000.3.20f1`), 2D, URP, Legacy Input Manager (`Input.GetKey`) |
 | **Orientation** | Landscape, fixed single-screen playfield — camera never moves |
 | **Session length** | 30 seconds – 10 minutes |
-| **Document version** | v1.3 — 2026-09-05 |
+| **Document version** | v1.0 — 2026-09-05 |
 
 > Written before implementation. Only the folder structure and a few placeholder art assets exist so far. Values marked as not decided yet will be filled in once the game is playable.
 
@@ -120,11 +120,11 @@ A short Start screen before play begins — no settings menu beyond that.
 
 | Asset | Status | Source / licence |
 |---|---|---|
-| Bubble sprite | Done — placeholder | Generated locally (solid circle, no external source) |
-| Projectile sprite | Done — placeholder | Generated locally (rounded bar; not yet arrowhead-shaped) |
-| Background | Done | "Sky" by wipics, [OpenGameArt.org](https://opengameart.org/content/sky-3), **CC0** (public domain) |
-| Player character | In progress | Planned: Kenney "Shape Characters" pack — [kenney.nl/assets/shape-characters](https://kenney.nl/assets/shape-characters), **CC0**, 100 geometric characters. Need to confirm it has the front/back/side views we want once downloaded. Placeholder in use until then |
-| SFX / Music | Not started | Planned: CC0 sources (Kenney.nl / OpenGameArt) |
+| Bubble sprite |  | Generated locally (solid circle, no external source) |
+| Projectile sprite |  | Generated locally (rounded bar; not yet arrowhead-shaped) |
+| Background |  | "Sky" by wipics, [OpenGameArt.org](https://opengameart.org/content/sky-3), **CC0** (public domain) |
+| Player character |  | Planned: Kenney "Shape Characters" pack — [kenney.nl/assets/shape-characters](https://kenney.nl/assets/shape-characters), **CC0**, 100 geometric characters. Need to confirm it has the front/back/side views we want once downloaded. Placeholder in use until then |
+| SFX / Music |  | Planned: CC0 sources (Kenney.nl / OpenGameArt) |
 
 **Technical art rules:** import sprites as `Sprite (2D and UI)`, not `Default`. Same Pixels Per Unit for all bubble sizes, so one sprite works for all three via `Transform` scale.
 
@@ -225,7 +225,5 @@ Also used, but not required: `ScriptableObject` data (`BubbleConfig`, `LevelConf
 
 | Version | Date | Change |
 |---|---|---|
-| v1.0 | 2026-08-31 | Initial document, written before implementation. Restructured to match the course's example GDD format. |
-| v1.1 | 2026-09-05 | Aligned to the course's official generic GDD template: trimmed High Concept to the 60-word limit, and expanded the Controls table with Gamepad/Touch columns and explicit input edge-case rules. |
-| v1.2 | 2026-09-05 | Filled in Engine (Unity 6.3 LTS, URP) from the actual project. Trimmed Target platform and Session length. Simplified language throughout. Parameters table now uses "Value" (blank where not decided) instead of "Starting value"/`TBD`. Added a Canvas Scaler note to §5. |
-| v1.3 | 2026-09-05 | Reworded §2 Taking/Not-taking to focus on gameplay mechanics, not art licensing (moved to §6). Added a Start screen to §5 and §8.1. Named a concrete CC0 art source for the player character in §6 (Kenney "Shape Characters"). |
+| v1.0 | 2026-08-31 | Initial document, written before implementation. |
+
