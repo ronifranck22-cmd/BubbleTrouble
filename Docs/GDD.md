@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Working title** | Bubble Trouble: Retro Remake (`BubbleTrouble-Unity`) |
+| **Working title** | Bubble Trouble: Retro Remake (`BubbleTrouble`) |
 | **Team** | Roni Franck |
 | **Genre** | Arcade / physics bubble-shooter / single-screen split-and-clear |
 | **Target platform** | PC (macOS), standalone |
