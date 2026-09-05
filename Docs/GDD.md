@@ -123,7 +123,7 @@ A short Start screen before play begins — no settings menu beyond that.
 | Bubble sprite |  | Generated locally (solid circle, no external source) |
 | Projectile sprite |  | Generated locally (rounded bar; not yet arrowhead-shaped) |
 | Background |  | "Sky" by wipics, [OpenGameArt.org](https://opengameart.org/content/sky-3), **CC0** (public domain) |
-| Player character |  | Planned: Kenney "Shape Characters" pack — [kenney.nl/assets/shape-characters](https://kenney.nl/assets/shape-characters), **CC0**, 100 geometric characters. Need to confirm it has the front/back/side views we want once downloaded. Placeholder in use until then |
+| Player character |  | Planned: : player character sprite in 3 angles (front, side, back) for different game states (start screen, walking, shooting/idle)|
 | SFX / Music |  | Planned: CC0 sources (Kenney.nl / OpenGameArt) |
 
 **Technical art rules:** import sprites as `Sprite (2D and UI)`, not `Default`. Same Pixels Per Unit for all bubble sizes, so one sprite works for all three via `Transform` scale.
