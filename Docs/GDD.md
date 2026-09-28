@@ -189,16 +189,18 @@ Also used, but not required: `ScriptableObject` data (`BubbleConfig`, `LevelConf
 
 ### 8.1 Core — must exist for the game to be submittable
 
-- [ ] Start screen with a "press to begin" prompt
-- [ ] Player horizontal movement, clamped to screen
-- [ ] Shoot: single pooled projectile, straight up, destroyed at ceiling
-- [ ] Bubble physics (bounce off walls/floor via `Rigidbody2D` + `Physics Material 2D`)
-- [ ] Split-on-hit chain (large → medium → small → cleared + score)
-- [ ] Bubble-player contact costs a life, with brief invulnerability after
-- [ ] Score, lives, level number in UI; `GameManager` as the single source of truth
-- [ ] High score via `PlayerPrefs`
-- [ ] Level progression via `LevelConfig` list (4–5 levels to start)
-- [ ] GameOver and Win screens
+*Status after automated Play-mode test, 2026-09-27. Checked = verified working in the Editor. Keyboard input (movement / Space) could not be simulated by the test and still needs a manual play-through.*
+
+- [x] Start screen with a "press to begin" prompt — Start button verified; "Press Space to start" wired in code, **Space not yet verified by hand**
+- [ ] Player horizontal movement, clamped to screen — code in place, clamp math now correct (camera switched to Orthographic); **not yet verified by hand**
+- [ ] Shoot: single pooled projectile, straight up, destroyed at ceiling — pooled projectile → bubble hit verified; **Space input and ceiling return not yet verified by hand**
+- [x] Bubble physics (bounce off walls/floor via `Rigidbody2D` + `Physics Material 2D`)
+- [x] Split-on-hit chain (large → medium → small → cleared + score)
+- [x] Bubble-player contact costs a life, with brief invulnerability after — uses `OnTriggerStay2D`, so continued contact after invulnerability ends costs another life (verified)
+- [x] Score, lives, level number in UI; `GameManager` as the single source of truth
+- [x] High score via `PlayerPrefs` — saved, shown on GameOver and Win, marked "NEW High Score" when beaten (verified)
+- [x] Level progression via `LevelConfig` list (4–5 levels to start) — 5 levels, full run to Win verified
+- [x] GameOver and Win screens (Restart / Play Again reloads the scene — verified)
 - [ ] **Open decision:** per-level timer (see §3) — not decided yet, not blocking anything
 
 ### 8.2 Polish — only if time remains, cheapest first
@@ -226,4 +228,5 @@ Also used, but not required: `ScriptableObject` data (`BubbleConfig`, `LevelConf
 | Version | Date | Change |
 |---|---|---|
 | v1.0 | 2026-08-31 | Initial document, written before implementation. |
+| v1.1 | 2026-09-27 | §8.1 checklist updated after first end-to-end Play-mode test. |
 

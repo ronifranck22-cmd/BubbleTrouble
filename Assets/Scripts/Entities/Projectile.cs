@@ -25,4 +25,16 @@ public class Projectile : MonoBehaviour
             ProjectilePool.Instance.ReturnProjectile(gameObject);
         }
     }
+
+    // Projectile's collider is a trigger (see prefab); Bubble's Rigidbody2D is what
+    // makes the 2D physics system fire this event.
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!other.CompareTag("Bubble")) return;
+
+        Bubble bubble = other.GetComponent<Bubble>();
+        bubble?.Pop();
+
+        ProjectilePool.Instance.ReturnProjectile(gameObject);
+    }
 }
