@@ -4,7 +4,7 @@ using UnityEngine;
 public class Projectile : MonoBehaviour
 {
     public float speed = 8f;
-    public float trailLength = 0.5f;
+    public float trailLength = 1.2f;
 
     private SpriteRenderer spriteRenderer;
     private LineRenderer trailRenderer;
