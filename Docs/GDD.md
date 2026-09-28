@@ -65,11 +65,11 @@ stateDiagram-v2
 
 | Parameter | Field | Value | Notes |
 |---|---|---|---|
-| Player move speed | `moveSpeed` | | set once the player exists |
+| Player move speed | `movementSpeed` | 5 | |
 | Player horizontal clamp | `minX` / `maxX` | screen edges | |
 | Lives | `startingLives` | 3 | |
 | Invulnerability window | `invulnDuration` | 1.0 s | |
-| Projectile speed | `projectileSpeed` | | |
+| Projectile speed | `speed` | 8 | |
 | Bubble sizes | `BubbleConfig.radius` | 3 tiers | one sprite, scaled per size |
 | Bubble bounce | `Physics Material 2D.bounciness` | high (~0.9) | |
 | Bubble score | `BubbleConfig.score` | smallest = most points | |
@@ -123,8 +123,8 @@ A short Start screen before play begins — no settings menu beyond that.
 | Bubble sprite |  | Generated locally (solid circle, no external source) |
 | Projectile sprite |  | Generated locally (rounded bar; not yet arrowhead-shaped) |
 | Background |  | "Sky" by wipics, [OpenGameArt.org](https://opengameart.org/content/sky-3), **CC0** (public domain) |
-| Player character |  | Planned: : player character sprite in 3 angles (front, side, back) for different game states (start screen, walking, shooting/idle)|
-| SFX / Music |  | Planned: CC0 sources (Kenney.nl / OpenGameArt) |
+| Player character | Implemented | Three sprites (front, back, side): FRONT shown as a UI Image on the start screen, BACK while standing still in gameplay, SIDE (flipped by direction) while walking left/right |
+| SFX / Music | Deferred | Planned: CC0 sources (Kenney.nl / OpenGameArt) — deferred, only if time remains |
 
 **Technical art rules:** import sprites as `Sprite (2D and UI)`, not `Default`. Same Pixels Per Unit for all bubble sizes, so one sprite works for all three via `Transform` scale.
 
@@ -229,4 +229,5 @@ Also used, but not required: `ScriptableObject` data (`BubbleConfig`, `LevelConf
 |---|---|---|
 | v1.0 | 2026-08-31 | Initial document, written before implementation. |
 | v1.1 | 2026-09-27 | §8.1 checklist updated after first end-to-end Play-mode test. |
+| v1.2 | 2026-09-28 | §3 parameters filled in with real code values; §6 Player row updated to reflect implemented sprites, SFX/Music explicitly deferred. |
 
