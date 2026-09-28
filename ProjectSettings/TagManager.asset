@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Bounds
   - Bubble
+  - Pickup
   layers:
   - Default
   - TransparentFX

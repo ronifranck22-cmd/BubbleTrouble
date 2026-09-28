@@ -4013,6 +4013,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: ec6e81b7bc434462bbdf001c2890a802, type: 2}
   bubblePrefab: {fileID: 6146455250288159133, guid: a57b4992c86704cf6b24f1f017edc5a6, type: 3}
   backgroundRenderer: {fileID: 1615096948}
+  lifePickupPrefab: {fileID: 2174958568036750886, guid: 395c336652b4e4f34bd5e9b717602cf0, type: 3}
+  lifePickupChance: 0.3
   spawnAreaPadding: 0.6
 --- !u!4 &2085441754
 Transform:

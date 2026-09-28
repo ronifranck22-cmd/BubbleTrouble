@@ -73,6 +73,14 @@ public class GameManager : MonoBehaviour
             TriggerGameOver();
     }
 
+    public void GainLife()
+    {
+        if (State != GameState.Playing) return;
+
+        Lives++;
+        OnLivesChanged?.Invoke(Lives);
+    }
+
     // isLastLevel is decided by LevelManager, which owns the level list.
     public void NotifyLevelCleared(bool isLastLevel)
     {

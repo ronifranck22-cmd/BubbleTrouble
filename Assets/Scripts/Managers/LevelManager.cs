@@ -14,6 +14,10 @@ public class LevelManager : MonoBehaviour
     [Tooltip("Scene-level SpriteRenderer that shows the current level's background.")]
     public SpriteRenderer backgroundRenderer;
 
+    [Header("Life Pickup")]
+    public GameObject lifePickupPrefab;
+    [Range(0f, 1f)] public float lifePickupChance = 0.3f;
+
     [Tooltip("Fraction of the camera's half-width/height kept clear of the very edges when picking a random spawn point.")]
     [Range(0.1f, 1f)]
     public float spawnAreaPadding = 0.6f;
@@ -65,11 +69,18 @@ public class LevelManager : MonoBehaviour
         LevelConfig level = levels[index];
         SetBackground(level.background);
 
+        // A pickup nobody collected on the previous level must not carry over.
+        foreach (GameObject old in GameObject.FindGameObjectsWithTag("Pickup"))
+            Destroy(old);
+
         foreach (LevelConfig.BubbleSpawn spawn in level.startingBubbles)
         {
             for (int i = 0; i < spawn.count; i++)
                 SpawnBubble(spawn.config);
         }
+
+        if (lifePickupPrefab != null && Random.value < lifePickupChance)
+            Instantiate(lifePickupPrefab, GetPickupSpawnPosition(), Quaternion.identity);
     }
 
     private void SetBackground(Sprite sprite)
@@ -116,6 +127,27 @@ public class LevelManager : MonoBehaviour
         float x = Random.Range(-halfWidth, halfWidth);
         float y = cam.orthographicSize * 0.5f;
         return new Vector3(x, y, 0f);
+    }
+
+    // Pickups don't move, so they sit at the player's height (random X like the
+    // bubbles) instead of the bubbles' mid-air spawn height; always reachable by walking,
+    // but not right on top of the player, so it still takes a short walk to collect.
+    private Vector3 GetPickupSpawnPosition()
+    {
+        GameObject player = GameObject.FindWithTag("Player");
+        float playerX = player != null ? player.transform.position.x : 0f;
+
+        Vector3 position = GetRandomSpawnPosition();
+        const float minDistanceFromPlayer = 2f;
+        const int maxAttempts = 10;
+
+        for (int i = 0; i < maxAttempts && Mathf.Abs(position.x - playerX) < minDistanceFromPlayer; i++)
+            position = GetRandomSpawnPosition();
+
+        if (player != null)
+            position.y = player.transform.position.y;
+
+        return position;
     }
 
     // Bubble calls this on itself (for the two children it spawns when popped) so the
