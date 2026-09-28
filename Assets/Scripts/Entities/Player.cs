@@ -11,9 +11,9 @@ public class Player : MonoBehaviour
     public float invulnDuration = 1.0f;
     public float flickerInterval = 0.1f;
 
-    [Header("Sprites")]
-    public Sprite backSprite;
-    public Sprite sideSprite;
+    [Header("Skin")]
+    public PlayerSkin defaultSkin;   // Skin_Classic; used when nothing was picked on the Start screen
+    private PlayerSkin activeSkin;
 
     private SpriteRenderer spriteRenderer;
     private GameObject activeProjectile;
@@ -33,7 +33,7 @@ public class Player : MonoBehaviour
         Color c = spriteRenderer.color;
         c.a = 0f;
         spriteRenderer.color = c;
-        spriteRenderer.sprite = backSprite;
+        spriteRenderer.sprite = defaultSkin != null ? defaultSkin.back : null;
     }
 
     private void OnEnable()
@@ -52,6 +52,9 @@ public class Player : MonoBehaviour
 
     private void HandleGameStarted()
     {
+        activeSkin = CharacterSelectUI.SelectedSkin != null ? CharacterSelectUI.SelectedSkin : defaultSkin;
+        spriteRenderer.sprite = activeSkin.back;
+
         StartCoroutine(FadeIn());
     }
 
@@ -96,17 +99,17 @@ public class Player : MonoBehaviour
         // side.png faces left in the source art, so it's flipped only when walking right.
         if (horizontal < 0f)
         {
-            spriteRenderer.sprite = sideSprite;
+            spriteRenderer.sprite = activeSkin.side;
             spriteRenderer.flipX = false;
         }
         else if (horizontal > 0f)
         {
-            spriteRenderer.sprite = sideSprite;
+            spriteRenderer.sprite = activeSkin.side;
             spriteRenderer.flipX = true;
         }
         else
         {
-            spriteRenderer.sprite = backSprite;   // standing still = BACK, not FRONT
+            spriteRenderer.sprite = activeSkin.back;   // standing still = BACK, not FRONT
             spriteRenderer.flipX = false;
         }
 
