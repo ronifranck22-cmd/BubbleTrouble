@@ -6,10 +6,12 @@ public class Bubble : MonoBehaviour
 {
     private BubbleConfig config;
     private Rigidbody2D rb;
+    private SpriteRenderer spriteRenderer;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     // Called by LevelManager right after Instantiate.
@@ -17,6 +19,7 @@ public class Bubble : MonoBehaviour
     {
         config = bubbleConfig;
         transform.localScale = Vector3.one * config.scale;
+        spriteRenderer.color = config.color;
         Launch();
     }
 
@@ -46,6 +49,7 @@ public class Bubble : MonoBehaviour
         GameObject childObj = Instantiate(LevelManager.Instance.bubblePrefab, transform.position, Quaternion.identity);
         Bubble childBubble = childObj.GetComponent<Bubble>();
         childBubble.config = config.nextSizeDown;
+        childBubble.spriteRenderer.color = config.nextSizeDown.color;
         childObj.transform.localScale = Vector3.one * config.nextSizeDown.scale;
         childBubble.rb.linearVelocity = new Vector2(direction.x * config.nextSizeDown.initialSpeed, config.nextSizeDown.initialSpeed);
 

@@ -16,4 +16,5 @@ MonoBehaviour:
   startingBubbles:
   - config: {fileID: 11400000, guid: e62ee6ba56ea84961bb22b68d9ad785c, type: 2}
     count: 1
+  background: {fileID: 21300000, guid: b2c8015503f29482cb884d4ad8a336de, type: 3}
   levelTimer: -1

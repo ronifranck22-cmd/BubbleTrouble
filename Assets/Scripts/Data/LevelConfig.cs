@@ -16,6 +16,9 @@ public class LevelConfig : ScriptableObject
 
     public BubbleSpawn[] startingBubbles;
 
+    [Tooltip("Shown behind the playfield while this level is active.")]
+    public Sprite background;
+
     [Tooltip("Seconds before the level auto-fails. -1 = no timer (not decided yet per GDD section 3/8.1).")]
     public float levelTimer = -1f;
 }

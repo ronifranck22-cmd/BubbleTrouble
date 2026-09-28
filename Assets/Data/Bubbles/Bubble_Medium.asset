@@ -16,3 +16,4 @@ MonoBehaviour:
   score: 20
   initialSpeed: 3.5
   nextSizeDown: {fileID: 11400000, guid: e1f83957b35c347dfa3ba571686065c2, type: 2}
+  color: {r: 0.95, g: 0.65, b: 0.15, a: 1}

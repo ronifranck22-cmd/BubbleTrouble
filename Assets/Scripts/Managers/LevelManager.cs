@@ -11,6 +11,9 @@ public class LevelManager : MonoBehaviour
     [Tooltip("The single shared Bubble prefab (GDD 7: one prefab, not three).")]
     public GameObject bubblePrefab;
 
+    [Tooltip("Scene-level SpriteRenderer that shows the current level's background.")]
+    public SpriteRenderer backgroundRenderer;
+
     [Tooltip("Fraction of the camera's half-width/height kept clear of the very edges when picking a random spawn point.")]
     [Range(0.1f, 1f)]
     public float spawnAreaPadding = 0.6f;
@@ -60,12 +63,37 @@ public class LevelManager : MonoBehaviour
         }
 
         LevelConfig level = levels[index];
+        SetBackground(level.background);
 
         foreach (LevelConfig.BubbleSpawn spawn in level.startingBubbles)
         {
             for (int i = 0; i < spawn.count; i++)
                 SpawnBubble(spawn.config);
         }
+    }
+
+    private void SetBackground(Sprite sprite)
+    {
+        if (sprite == null || backgroundRenderer == null) return;
+
+        backgroundRenderer.sprite = sprite;
+
+        // Scale to cover the camera's whole view (plus a small margin) in both
+        // directions, whatever the image's resolution/aspect or the screen's
+        // aspect; images wider/taller than the view get cropped at the edges.
+        Camera cam = Camera.main;
+        float targetHeight = cam.orthographicSize * 2f + 2f;
+        float targetWidth = targetHeight * cam.aspect + 2f;
+        Vector2 native = sprite.bounds.size;
+        if (native.x > 0f && native.y > 0f)
+        {
+            float scale = Mathf.Max(targetWidth / native.x, targetHeight / native.y);
+            backgroundRenderer.transform.localScale = new Vector3(scale, scale, 1f);
+        }
+
+        // Centre on the camera (which sits at y = 1, not the origin).
+        Vector3 camPos = cam.transform.position;
+        backgroundRenderer.transform.position = new Vector3(camPos.x, camPos.y, backgroundRenderer.transform.position.z);
     }
 
     private void SpawnBubble(BubbleConfig config)

@@ -18,4 +18,5 @@ MonoBehaviour:
     count: 2
   - config: {fileID: 11400000, guid: e62ee6ba56ea84961bb22b68d9ad785c, type: 2}
     count: 1
+  background: {fileID: 21300000, guid: 886f9ad552d3443b793418029e0f695e, type: 3}
   levelTimer: -1
