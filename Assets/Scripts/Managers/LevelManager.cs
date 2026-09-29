@@ -18,15 +18,61 @@ public class LevelManager : MonoBehaviour
     public GameObject lifePickupPrefab;
     [Range(0f, 1f)] public float lifePickupChance = 0.3f;
 
+    [Header("Time Freeze Pickup")]
+    public GameObject timeFreezePickupPrefab;
+    [Range(0f, 1f)] public float timeFreezePickupChance = 0.15f;
+
+    [Header("Shield Pickup")]
+    public GameObject shieldPickupPrefab;
+    [Range(0f, 1f)] public float shieldPickupChance = 0.15f;
+
+    [Tooltip("Minimum horizontal distance between pickups that spawn on the same level.")]
+    public float minDistanceBetweenPickups = 1.5f;
+
     [Tooltip("Fraction of the camera's half-width/height kept clear of the very edges when picking a random spawn point.")]
     [Range(0.1f, 1f)]
     public float spawnAreaPadding = 0.6f;
 
     private readonly List<GameObject> activeBubbles = new List<GameObject>();
 
+    private float freezeRemaining;
+
+    public bool BubblesFrozen => freezeRemaining > 0f;
+    public float FreezeRemaining => freezeRemaining;
+
     private void Awake()
     {
         Instance = this;
+    }
+
+    // Scaled time, so the freeze also pauses during the Game Over freeze (timeScale 0).
+    private void Update()
+    {
+        if (freezeRemaining <= 0f) return;
+
+        freezeRemaining -= Time.deltaTime;
+        if (freezeRemaining <= 0f)
+            SetBubblesFrozen(false);
+    }
+
+    // Time Freeze pickup: every bubble stops; picking another one while frozen extends it.
+    public void FreezeBubbles(float duration)
+    {
+        bool wasFrozen = BubblesFrozen;
+        freezeRemaining = Mathf.Max(freezeRemaining, duration);
+        if (!wasFrozen)
+            SetBubblesFrozen(true);
+    }
+
+    private void SetBubblesFrozen(bool frozen)
+    {
+        if (!frozen) freezeRemaining = 0f;
+
+        foreach (GameObject bubbleObj in activeBubbles)
+        {
+            if (bubbleObj != null)
+                bubbleObj.GetComponent<Bubble>().SetFrozen(frozen);
+        }
     }
 
     private void OnEnable()
@@ -59,6 +105,7 @@ public class LevelManager : MonoBehaviour
     private void LoadLevel(int index)
     {
         ClearActiveBubbles();
+        freezeRemaining = 0f; // a new level never starts frozen
 
         if (levels == null || index < 0 || index >= levels.Length)
         {
@@ -79,8 +126,20 @@ public class LevelManager : MonoBehaviour
                 SpawnBubble(spawn.config);
         }
 
-        if (lifePickupPrefab != null && Random.value < lifePickupChance)
-            Instantiate(lifePickupPrefab, GetPickupSpawnPosition(), Quaternion.identity);
+        // Independent roll per pickup type; ones on the same level keep apart.
+        var takenX = new List<float>();
+        TrySpawnPickup(lifePickupPrefab, lifePickupChance, takenX);
+        TrySpawnPickup(timeFreezePickupPrefab, timeFreezePickupChance, takenX);
+        TrySpawnPickup(shieldPickupPrefab, shieldPickupChance, takenX);
+    }
+
+    private void TrySpawnPickup(GameObject prefab, float chance, List<float> takenX)
+    {
+        if (prefab == null || Random.value >= chance) return;
+
+        Vector3 position = GetPickupSpawnPosition(takenX);
+        Instantiate(prefab, position, Quaternion.identity);
+        takenX.Add(position.x);
     }
 
     private void SetBackground(Sprite sprite)
@@ -117,7 +176,7 @@ public class LevelManager : MonoBehaviour
 
         GameObject bubbleObj = Instantiate(bubblePrefab, GetRandomSpawnPosition(), Quaternion.identity);
         bubbleObj.GetComponent<Bubble>().Initialize(config);
-        activeBubbles.Add(bubbleObj);
+        RegisterSpawnedBubble(bubbleObj);
     }
 
     private Vector3 GetRandomSpawnPosition()
@@ -131,17 +190,26 @@ public class LevelManager : MonoBehaviour
 
     // Pickups don't move, so they sit at the player's height (random X like the
     // bubbles) instead of the bubbles' mid-air spawn height; always reachable by walking,
-    // but not right on top of the player, so it still takes a short walk to collect.
-    private Vector3 GetPickupSpawnPosition()
+    // but not right on top of the player (a short walk to collect) and not on top of
+    // another pickup from the same level.
+    private Vector3 GetPickupSpawnPosition(List<float> takenX)
     {
         GameObject player = GameObject.FindWithTag("Player");
         float playerX = player != null ? player.transform.position.x : 0f;
 
-        Vector3 position = GetRandomSpawnPosition();
         const float minDistanceFromPlayer = 2f;
-        const int maxAttempts = 10;
+        const int maxAttempts = 20;
 
-        for (int i = 0; i < maxAttempts && Mathf.Abs(position.x - playerX) < minDistanceFromPlayer; i++)
+        bool TooClose(float x)
+        {
+            if (Mathf.Abs(x - playerX) < minDistanceFromPlayer) return true;
+            foreach (float other in takenX)
+                if (Mathf.Abs(x - other) < minDistanceBetweenPickups) return true;
+            return false;
+        }
+
+        Vector3 position = GetRandomSpawnPosition();
+        for (int i = 0; i < maxAttempts && TooClose(position.x); i++)
             position = GetRandomSpawnPosition();
 
         if (player != null)
@@ -155,6 +223,10 @@ public class LevelManager : MonoBehaviour
     public void RegisterSpawnedBubble(GameObject bubbleObj)
     {
         activeBubbles.Add(bubbleObj);
+
+        // Bubbles born during a Time Freeze (e.g. split children) start frozen too.
+        if (BubblesFrozen)
+            bubbleObj.GetComponent<Bubble>().SetFrozen(true);
     }
 
     public void NotifyBubbleRemoved(GameObject bubbleObj)

@@ -7,6 +7,8 @@ public class Bubble : MonoBehaviour
     private BubbleConfig config;
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
+    private bool isFrozen;
+    private Vector2 frozenVelocity;
 
     private void Awake()
     {
@@ -27,6 +29,27 @@ public class Bubble : MonoBehaviour
     {
         float dirX = Random.value > 0.5f ? 1f : -1f;
         rb.linearVelocity = new Vector2(config.initialSpeed * dirX, config.initialSpeed);
+    }
+
+    // Time Freeze: hold the bubble exactly where it is and resume with the same velocity.
+    // Kinematic (not simulated = false) keeps its collider active, so a frozen bubble can
+    // still be shot and split (its children are frozen too via LevelManager).
+    public void SetFrozen(bool frozen)
+    {
+        if (frozen == isFrozen) return;
+        isFrozen = frozen;
+
+        if (frozen)
+        {
+            frozenVelocity = rb.linearVelocity;
+            rb.linearVelocity = Vector2.zero;
+            rb.bodyType = RigidbodyType2D.Kinematic;
+        }
+        else
+        {
+            rb.bodyType = RigidbodyType2D.Dynamic;
+            rb.linearVelocity = frozenVelocity;
+        }
     }
 
     // Called by Projectile.OnTriggerEnter2D when this bubble gets hit.

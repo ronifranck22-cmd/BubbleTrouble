@@ -20,6 +20,14 @@ public class Player : MonoBehaviour
     private bool isInvulnerable;
     private bool isTransitioning;
 
+    [Header("Shield")]
+    [Tooltip("Steady tint while the Shield pickup is active (distinct from the hit flicker).")]
+    public Color shieldTint = new Color(0.6f, 0.85f, 1f, 1f);
+    private float shieldRemaining;
+
+    public bool IsShielded => shieldRemaining > 0f;
+    public float ShieldRemaining => shieldRemaining;
+
     private Sprite cachedSprite;
     private float cachedMinX;
     private float cachedMaxX;
@@ -82,8 +90,35 @@ public class Player : MonoBehaviour
             (GameManager.Instance.State != GameManager.GameState.Playing || isTransitioning))
             return;
 
+        UpdateShield();
         HandleMovement();
         HandleShooting();
+    }
+
+    // Shield pickup: no life lost from bubbles for the duration; picking another one extends it.
+    public void ActivateShield(float duration)
+    {
+        shieldRemaining = Mathf.Max(shieldRemaining, duration);
+        SetTint(shieldTint);
+    }
+
+    private void UpdateShield()
+    {
+        if (shieldRemaining <= 0f) return;
+
+        shieldRemaining -= Time.deltaTime;
+        if (shieldRemaining <= 0f)
+        {
+            shieldRemaining = 0f;
+            SetTint(Color.white);
+        }
+    }
+
+    // Changes RGB only; alpha belongs to the start-of-game fade-in.
+    private void SetTint(Color tint)
+    {
+        Color c = spriteRenderer.color;
+        spriteRenderer.color = new Color(tint.r, tint.g, tint.b, c.a);
     }
 
     private void HandleMovement()
@@ -171,7 +206,7 @@ public class Player : MonoBehaviour
 
     private void TakeHit()
     {
-        if (isInvulnerable) return;
+        if (isInvulnerable || IsShielded) return;
 
         GameManager.Instance.LoseLife();
 

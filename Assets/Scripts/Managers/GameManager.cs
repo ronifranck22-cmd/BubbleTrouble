@@ -13,7 +13,7 @@ public class GameManager : MonoBehaviour
     public int startingLives = 3;
 
     [Tooltip("Real-time pause after the final hit before the Game Over screen; the game is frozen meanwhile.")]
-    public float gameOverDelay = 1.5f;
+    public float gameOverDelay = 0.4f;
 
     public int Score { get; private set; }
     public int Lives { get; private set; }
