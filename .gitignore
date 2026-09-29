@@ -21,3 +21,6 @@ UserSettings/
 
 # Claude
 .claude/
+
+# Game view screenshots taken while testing (kept local, not part of the project)
+Screenshots/

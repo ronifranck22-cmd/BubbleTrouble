@@ -30,6 +30,8 @@ public class UIManager : MonoBehaviour
     public Text gameOverHighScoreText;
     public Text winScoreText;
     public Text winHighScoreText;
+    public Image gameOverCharacterImage;
+    public Image winCharacterImage;
 
     private void OnEnable()
     {
@@ -109,6 +111,7 @@ public class UIManager : MonoBehaviour
 
         if (gameOverScoreText) gameOverScoreText.text = $"Score: {GameManager.Instance.Score}";
         if (gameOverHighScoreText) gameOverHighScoreText.text = HighScoreLine();
+        ShowSelectedCharacter(gameOverCharacterImage);
     }
 
     private void ShowWin()
@@ -117,6 +120,15 @@ public class UIManager : MonoBehaviour
 
         if (winScoreText) winScoreText.text = $"Score: {GameManager.Instance.Score}";
         if (winHighScoreText) winHighScoreText.text = HighScoreLine();
+        ShowSelectedCharacter(winCharacterImage);
+    }
+
+    // Result screens show the skin picked on the Start screen (its FRONT sprite);
+    // the Image keeps its Inspector sprite (Classic) if nothing was picked.
+    private void ShowSelectedCharacter(Image image)
+    {
+        if (image && CharacterSelectUI.SelectedSkin != null)
+            image.sprite = CharacterSelectUI.SelectedSkin.front;
     }
 
     private string HighScoreLine()
