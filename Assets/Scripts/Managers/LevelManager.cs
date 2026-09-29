@@ -29,6 +29,14 @@ public class LevelManager : MonoBehaviour
     [Tooltip("Minimum horizontal distance between pickups that spawn on the same level.")]
     public float minDistanceBetweenPickups = 1.5f;
 
+    [Header("Mid-level Pickups")]
+    [Tooltip("Seconds between extra pickup rolls while a level is being played.")]
+    public float midLevelSpawnInterval = 7.5f;
+    [Tooltip("Mid-level chance = start-of-level chance x this (0.5 -> heart 0.15, freeze/shield 0.075).")]
+    [Range(0f, 1f)] public float midLevelChanceMultiplier = 0.5f;
+    [Tooltip("No extra pickup is rolled while this many uncollected ones are already on screen.")]
+    public int maxPickupsOnScreen = 2;
+
     [Tooltip("Fraction of the camera's half-width/height kept clear of the very edges when picking a random spawn point.")]
     [Range(0.1f, 1f)]
     public float spawnAreaPadding = 0.6f;
@@ -36,6 +44,7 @@ public class LevelManager : MonoBehaviour
     private readonly List<GameObject> activeBubbles = new List<GameObject>();
 
     private float freezeRemaining;
+    private float midLevelSpawnTimer;
 
     public bool BubblesFrozen => freezeRemaining > 0f;
     public float FreezeRemaining => freezeRemaining;
@@ -48,11 +57,39 @@ public class LevelManager : MonoBehaviour
     // Scaled time, so the freeze also pauses during the Game Over freeze (timeScale 0).
     private void Update()
     {
+        UpdateMidLevelPickups();
+
         if (freezeRemaining <= 0f) return;
 
         freezeRemaining -= Time.deltaTime;
         if (freezeRemaining <= 0f)
             SetBubblesFrozen(false);
+    }
+
+    // Extra pickups during a level: only while Playing (stops on level change, Game Over,
+    // Win), at a lower chance than the start-of-level roll, and never more than
+    // maxPickupsOnScreen uncollected at once.
+    private void UpdateMidLevelPickups()
+    {
+        if (GameManager.Instance == null || GameManager.Instance.State != GameManager.GameState.Playing) return;
+
+        midLevelSpawnTimer += Time.deltaTime;
+        if (midLevelSpawnTimer < midLevelSpawnInterval) return;
+        midLevelSpawnTimer = 0f;
+
+        var takenX = new List<float>();
+        foreach (GameObject existing in GameObject.FindGameObjectsWithTag("Pickup"))
+            takenX.Add(existing.transform.position.x);
+
+        TrySpawnMidLevelPickup(lifePickupPrefab, lifePickupChance, takenX);
+        TrySpawnMidLevelPickup(timeFreezePickupPrefab, timeFreezePickupChance, takenX);
+        TrySpawnMidLevelPickup(shieldPickupPrefab, shieldPickupChance, takenX);
+    }
+
+    private void TrySpawnMidLevelPickup(GameObject prefab, float startChance, List<float> takenX)
+    {
+        if (takenX.Count >= maxPickupsOnScreen) return;
+        TrySpawnPickup(prefab, startChance * midLevelChanceMultiplier, takenX);
     }
 
     // Time Freeze pickup: every bubble stops; picking another one while frozen extends it.
@@ -105,7 +142,8 @@ public class LevelManager : MonoBehaviour
     private void LoadLevel(int index)
     {
         ClearActiveBubbles();
-        freezeRemaining = 0f; // a new level never starts frozen
+        freezeRemaining = 0f;     // a new level never starts frozen
+        midLevelSpawnTimer = 0f;  // and its mid-level pickup clock starts over
 
         if (levels == null || index < 0 || index >= levels.Length)
         {

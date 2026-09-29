@@ -2249,7 +2249,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: fa41d17d739084dfab2d3f9cbec71502, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 3c73ed7b139ef4e6e8dbca05c47cbc54, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2972,7 +2972,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: fa41d17d739084dfab2d3f9cbec71502, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 3c73ed7b139ef4e6e8dbca05c47cbc54, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -5808,6 +5808,9 @@ MonoBehaviour:
   shieldPickupPrefab: {fileID: 2039761160741677967, guid: 814925d22b3094fa08cac5911b66a659, type: 3}
   shieldPickupChance: 0.15
   minDistanceBetweenPickups: 1.5
+  midLevelSpawnInterval: 7.5
+  midLevelChanceMultiplier: 0.5
+  maxPickupsOnScreen: 2
   spawnAreaPadding: 0.6
 --- !u!4 &2085441754
 Transform:
