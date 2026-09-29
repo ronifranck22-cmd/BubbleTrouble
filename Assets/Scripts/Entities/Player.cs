@@ -174,6 +174,11 @@ public class Player : MonoBehaviour
         if (isInvulnerable) return;
 
         GameManager.Instance.LoseLife();
+
+        // Final hit: the game freezes before Game Over; skip the flicker so the
+        // player isn't left invisible (the flicker's first step hides the sprite).
+        if (GameManager.Instance.State != GameManager.GameState.Playing) return;
+
         StartCoroutine(InvulnerabilityRoutine());
     }
 

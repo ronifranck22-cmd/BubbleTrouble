@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 // Runs before other scripts so Instance exists when LevelManager/UIManager subscribe in OnEnable.
@@ -10,6 +11,9 @@ public class GameManager : MonoBehaviour
     public enum GameState { Start, Playing, LevelClear, GameOver, Win }
 
     public int startingLives = 3;
+
+    [Tooltip("Real-time pause after the final hit before the Game Over screen; the game is frozen meanwhile.")]
+    public float gameOverDelay = 1.5f;
 
     public int Score { get; private set; }
     public int Lives { get; private set; }
@@ -108,7 +112,24 @@ public class GameManager : MonoBehaviour
     {
         State = GameState.GameOver;
         SaveHighScoreIfNeeded();
+        StartCoroutine(GameOverPause());
+    }
+
+    // Freeze everything (physics, bubbles, projectile, player) on the final hit,
+    // then show the Game Over screen. Real-time wait because timeScale is 0.
+    private IEnumerator GameOverPause()
+    {
+        Time.timeScale = 0f;
+        yield return new WaitForSecondsRealtime(gameOverDelay);
+        Time.timeScale = 1f;
         OnGameOver?.Invoke();
+    }
+
+    // Never leave the game frozen if this object goes away mid-pause.
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Time.timeScale = 1f;
     }
 
     private void TriggerWin()
