@@ -9,7 +9,7 @@
 | **Engine** | Unity 6.3 LTS (`6000.3.20f1`), 2D, URP, Legacy Input Manager (`Input.GetKey`) |
 | **Orientation** | Landscape, fixed single-screen playfield — camera never moves |
 | **Session length** | 30 seconds – 10 minutes |
-| **Document version** | v1.5 — 2026-09-30 |
+| **Document version** | v1.3 — 2026-09-30 |
 
 > Written before implementation. Sections below now describe the game as built; see the Changelog for how it evolved.
 
@@ -21,9 +21,9 @@ A single player stands at the bottom of a fixed playfield, moving left/right and
 
 ### Design pillars
 
-1. **Real physics, not scripted movement.** Bubbles use `Rigidbody2D` and a bouncy `Physics Material 2D` — no hand-made bounce paths. *Rejects:* waypoint or tween-based bubble movement. *(The Time Freeze power-up, §8.2, temporarily sets frozen bubbles to `Kinematic` and restores their saved velocity when it ends — a physics-accurate pause, not scripted movement.)*
-2. **Every threat is visible.** All danger is on screen — nothing spawns off-screen or hidden. *Rejects:* off-screen spawners, random instant-death events, hidden hazards. *(This is also why the arena walls now track the camera's actual edge at any window size — see `ScreenBoundsFitter`, §7.)*
-3. **Few features, but working well.** The core list in §8.1 is short on purpose. *Rejects:* breakable terrain, multiplayer, hand-made level layouts — full list in §8.3.
+1. **Real physics, not scripted movement.** Bubbles use `Rigidbody2D` and a bouncy `Physics Material 2D` — no hand-made bounce paths. *Rejects:* waypoint or tween-based bubble movement.
+2. **Every threat is visible.** All danger is on screen — nothing spawns off-screen or hidden. *Rejects:* off-screen spawners, random instant-death events, hidden hazards.
+3. **Few features, but working well.** The core list in §8.1 is short on purpose. *Rejects:* breakable terrain, multiplayer, hand-made level layouts.
 
 ---
 
@@ -33,7 +33,7 @@ A single player stands at the bottom of a fixed playfield, moving left/right and
 - **Taking:** the split-on-hit bubble behaviour and bounce physics, the single-screen arena, the single-shot upward weapon, a level sequence with bigger/more starting bubbles each round, and a win screen after the last level.
 - **Not taking:** breakable terrain, and two-player mode — this build is solo-only from the start.
 
-(Art asset sourcing — including the player character and the original's harpoon-trail visual — is a licensing question, not a design one, and is covered in §6 and §8.2.)
+(Art asset sourcing — including the player character and the original's harpoon-trail visual — is a licensing question, not a design one, and is covered in §6.)
 
 ---
 
@@ -117,7 +117,7 @@ Uses the Legacy Input Manager (`Input.GetKey`), not the newer Input System packa
 
 ## 5. Screens & UI
 
-A short Start screen before play begins — no settings menu beyond that. Start, GameOver and Win all share one visual theme — rounded pastel buttons, faint background bubbles, and the Cormorant Garamond font (§6) in place of the default UI font — but not the same background: Start uses a lavender-to-sky-blue gradient, while GameOver/Win use a visually distinct mint-to-light-blue gradient, so the end screens read as their own moment rather than a copy of the Start screen.
+A short Start screen before play begins — no settings menu beyond that. Start, GameOver and Win share one visual theme (rounded pastel buttons, faint background bubbles, Cormorant Garamond font, §6). Start uses a lavender-to-sky-blue gradient background; GameOver/Win use a mint-to-light-blue gradient.
 
 1. **Start** — game title, "A/D or ←/→ to move · Space to shoot" instructions, a Start button, and "Press Space to start". `<` / `>` buttons let the player pick between two character skins (Classic, Skin2) before starting; the choice persists through Restart/Play Again within the same play session (it's a static field), and resets to Classic on relaunch, or when exiting Play mode in the editor (Domain Reload clears the static field).
 2. **Playing (HUD)** — score, lives, level number. Plain UI Text, top of screen, in the original font (kept separate from the Start/end-screen theme so gameplay numbers stay quick to read). A small countdown line appears here while Time Freeze or Shield is active.
@@ -136,7 +136,7 @@ A short Start screen before play begins — no settings menu beyond that. Start,
 |---|---|---|
 | Bubble sprite | Implemented | Generated locally (solid circle, one sprite scaled + tinted per size) |
 | Projectile sprite | Implemented | Generated locally — arrowhead shape, with a `LineRenderer` trail behind it |
-| Backgrounds | Implemented | "Sky" by wipics, [OpenGameArt.org](https://opengameart.org/content/sky-3), **CC0** (public domain) — one of several per-level backgrounds now used |
+| Backgrounds | Implemented | Level 1: "Sky" by wipics, [OpenGameArt.org](https://opengameart.org/content/sky-3), **CC0** (public domain). Levels 2–5 use additional background images |
 | Player character | Implemented | Two selectable skins (Classic, Skin2), each with front/back/side sprites; FRONT shown on the Start/GameOver/Win screens, BACK while standing still in gameplay, SIDE (flipped by direction) while walking |
 | Pickups | Implemented | Generated locally — heart (extra life), snowflake (Time Freeze), shield (Shield) |
 | Start/GameOver/Win theme | Implemented | Generated locally — rounded button/arrow sprites, soft background bubbles, two gradient backgrounds (lavender-to-sky-blue for Start, mint-to-light-blue for GameOver/Win) |
@@ -207,26 +207,22 @@ From the course's list ("object pools, coroutines, singletons... at least some o
 2. **Singleton** — `GameManager` is the single global point for score/lives/game-state.
 3. **Coroutines** — the player's post-hit invulnerability (flicker), the Start screen's fade-out, and the Game Over freeze all run as coroutines.
 
-Also used, but not required: `ScriptableObject` data (`BubbleConfig`, `LevelConfig`, `PlayerSkin`) and C# events from `GameManager` to `UIManager`. Mobile isn't planned — the three patterns above already cover "at least some" of the list.
-
 ---
 
 ## 8. Scope
 
 ### 8.1 Core — must exist for the game to be submittable
 
-*Status: all items below verified through extensive Play-mode testing (manual and automated) across the features added since v1.1.*
-
-- [x] Start screen with a "press to begin" prompt — Start button and "Press Space to start" both verified
-- [x] Player horizontal movement, clamped to screen — verified by hand and by automated testing across every supported window size/aspect ratio
-- [x] Shoot: single pooled projectile, straight up, destroyed at ceiling — verified
+- [x] Start screen with a "press to begin" prompt
+- [x] Player horizontal movement, clamped to screen
+- [x] Shoot: single pooled projectile, straight up, destroyed at ceiling
 - [x] Bubble physics (bounce off walls/floor via `Rigidbody2D` + `Physics Material 2D`)
 - [x] Split-on-hit chain (large → medium → small → cleared + score)
-- [x] Bubble-player contact costs a life, with brief invulnerability after — uses `OnTriggerStay2D`, so continued contact after invulnerability ends costs another life (verified)
+- [x] Bubble-player contact costs a life, with brief invulnerability after — uses `OnTriggerStay2D`, so continued contact after invulnerability ends costs another life
 - [x] Score, lives, level number in UI; `GameManager` as the single source of truth
-- [x] High score via `PlayerPrefs` — saved, shown on GameOver and Win, marked "NEW High Score" when beaten (verified)
-- [x] Level progression via `LevelConfig` list (5 levels) — full run to Win verified
-- [x] GameOver and Win screens (Restart / Play Again reloads the scene — verified)
+- [x] High score via `PlayerPrefs` — saved, shown on GameOver and Win, marked "NEW High Score" when beaten
+- [x] Level progression via `LevelConfig` list (5 levels)
+- [x] GameOver and Win screens (Restart / Play Again reloads the scene)
 - [x] Brief freeze (0.4 s) on the final hit before the Game Over screen, so the hit reads clearly instead of cutting away immediately
 - [ ] **Open decision:** per-level timer (see §3) — decided against; not blocking anything
 
@@ -234,31 +230,30 @@ Also used, but not required: `ScriptableObject` data (`BubbleConfig`, `LevelConf
 
 - [x] Time Freeze power-up
 - [x] Shield power-up
-- [x] Character selection — ended up as two full alternate skins (front/back/side art supplied ready-made), not a code colour-tint as originally planned; see the note on §8.3 below
+- [x] Character selection — ended up as two full alternate skins (front/back/side art supplied ready-made), not a code colour-tint as originally planned
 - [x] Extra life pickup (heart)
 - [x] Rope/line visual behind the projectile (`LineRenderer`)
 - [x] Proper arrowhead shape for the projectile sprite
-
-Three things beyond this original list were added along the way: a full Start/GameOver/Win visual redesign (§5, §6); a fix so the arena bounds always match the camera at any aspect ratio (§7, `ScreenBoundsFitter`) after erratic bubble behaviour was found near the edges of the screen; and a full set of sound effects (§6, `AudioManager`) — SFX had originally been filed as "deferred, only if time remains" (§8.3-adjacent, see the v1.2/v1.3 changelog entries), but time remained.
+- [x] Sound effects (§6, `AudioManager`) — originally filed as "deferred, only if time remains"; time remained
+- [x] Start/GameOver/Win visual redesign (§5, §6)
+- [x] Arena bounds that track the camera at any aspect ratio (§7, `ScreenBoundsFitter`)
 
 ### 8.3 Explicitly out of scope — **not** being built
 
-- **Breakable walls.** Needs hand-made level geometry, which conflicts with the data-driven `LevelConfig` approach.
-- **Ladders / vertical movement.** The player only moves left/right — a design pillar.
+- **Breakable walls.** Would need hand-built level geometry.
+- **Ladders / vertical movement.** Left/right only, by design.
 - **Two-player mode.** Solo project.
-- **More than two character skins.** Two (Classic, Skin2) are already implemented (§8.2), cheaply, because ready-made art was supplied rather than drawn from scratch; a bigger roster would need new art and isn't planned.
-- **Extra weapons.** Not part of the core loop, would need real changes to the shoot logic.
-- **Mobile build.** Not required by the assignment, and not planned.
+- **More than two character skins.** Already have two; more would need new art.
+- **Extra weapons.** Not part of the core loop.
+- **Mobile build.** Not required for the assignment.
 
 ---
 
 ## Changelog
 
-| Version | Date | Change |
-|---|---|---|
-| v1.0 | 2026-08-31 | Initial document, written before implementation. |
-| v1.1 | 2026-09-27 | §8.1 checklist updated after first end-to-end Play-mode test. |
-| v1.2 | 2026-09-28 | §3 parameters filled in with real code values; §6 Player row updated to reflect implemented sprites, SFX/Music explicitly deferred. |
-| v1.3 | 2026-09-29 | All §8.2 polish items implemented and checked off (Time Freeze, Shield, character skin selection, extra-life pickup, projectile trail, arrowhead sprite). Start/GameOver/Win screens redesigned with a shared pastel theme and a licensed font (§5, §6); GameOver/Win given their own distinct gradient background instead of reusing Start's. Bubble-bubble collisions disabled to fix erratic bounces; arena walls now track the camera at any aspect ratio (`ScreenBoundsFitter`, §7) after the same bug was found near the screen edges. Post-processing removed from the URP pipeline for truer, more saturated colours. Added a brief freeze before the Game Over screen. Pickups now also re-roll periodically mid-level, not just at level start (§3). §3, §5–§8 updated to match. |
-| v1.4 | 2026-09-30 | Sound effects added via a new `AudioManager` (§6, §7): shoot, bubble pop, player hit, the three pickups, level clear, Game Over, and Win — 9 clips, self-synthesised (not downloaded) after the planned CC0 source turned out to be network-blocked, with per-clip volume to balance them against each other. Background music remains deferred/out of scope. §3, §6–§8 updated to match. |
-| v1.5 | 2026-09-30 | QA pass across window sizes/aspect ratios and a set of gameplay edge cases (following up on external feedback about UI breaking under `Constant Pixel Size` scaling — confirmed this project already uses `Scale With Screen Size`, §5). Found and fixed: the Start screen title clipping on very narrow windows (now Best Fit); the gameplay background not re-fitting to the camera after a resize mid-level; bubbles/pickups getting stranded outside the arena if the window shrinks mid-level (`ScreenBoundsFitter` now pulls them back in, §7); two bubble-pop sounds overlapping in the same frame clipping together (bubble-pop volume lowered). Also clarified (not changed): the character skin choice persists through Restart/Play Again within a play session, resetting to Classic only on relaunch or on exiting Play mode in the editor (§5) — documented as the actual, and better, behaviour rather than changed to force a reset. Full playthrough to Win, high-score handling, power-up stacking/extension (Shield-on-Shield, Freeze-on-Freeze, both at once), and Restart/Singleton robustness all verified with no issues. |
+| Version | Change |
+|---|---|
+| v1.0 | Initial document and project setup, written before implementation. |
+| v1.1 | Core gameplay loop, UI, and first-pass art implemented; document updated to match. |
+| v1.2 | Power-ups, screen redesign, and window-size/aspect-ratio robustness added. |
+| v1.3 | Sound effects added, full playtest pass across window sizes and gameplay edge cases, project cleaned up, document reviewed end to end. |
