@@ -4,7 +4,7 @@ using UnityEngine;
 // orthographicSize * aspect the Player's movement clamp uses, so bubbles and the
 // Player stop at the same place at any aspect ratio (and nothing leaves the view).
 // Refits when the camera's aspect, size or position changes (window resize,
-// Maximize on Play).
+// Maximize on Play), mid-level too: background, walls, and anything left outside.
 public class ScreenBoundsFitter : MonoBehaviour
 {
     public BoxCollider2D wallLeft;
@@ -40,6 +40,10 @@ public class ScreenBoundsFitter : MonoBehaviour
         lastSize = cam.orthographicSize;
         lastCamPosition = cam.transform.position;
 
+        // The level background is only fitted on level load; re-cover the new view.
+        if (LevelManager.Instance != null)
+            LevelManager.Instance.RefitBackground();
+
         float halfWidth = cam.orthographicSize * cam.aspect;
         float camX = cam.transform.position.x;
 
@@ -52,6 +56,38 @@ public class ScreenBoundsFitter : MonoBehaviour
         float span = 2f * halfWidth + 2f * Mathf.Max(Width(wallLeft), Width(wallRight));
         Stretch(wallTop, span, camX);
         Stretch(wallFloor, span, camX);
+
+        // A narrower view mid-level leaves anything in the cut-off strip outside the
+        // new walls for good (a bubble there can't be popped, so the level can't end).
+        BringInside("Bubble", camX - halfWidth, camX + halfWidth);
+        BringInside("Pickup", camX - halfWidth, camX + halfWidth);
+    }
+
+    // Clamps each tagged object fully between the walls; bubbles also get their
+    // horizontal velocity pointed inward so they don't head straight back out.
+    private static void BringInside(string tag, float minX, float maxX)
+    {
+        foreach (GameObject obj in GameObject.FindGameObjectsWithTag(tag))
+        {
+            Collider2D col = obj.GetComponent<Collider2D>();
+            float extent = col ? col.bounds.extents.x : 0f;
+            Vector3 p = obj.transform.position;
+            float x = Mathf.Clamp(p.x, minX + extent, maxX - extent);
+            if (Mathf.Approximately(x, p.x)) continue;
+
+            float inward = x < p.x ? -1f : 1f;
+            p.x = x;
+            obj.transform.position = p;
+
+            Rigidbody2D rb = obj.GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                rb.position = p;
+                Vector2 v = rb.linearVelocity;
+                v.x = inward * Mathf.Abs(v.x);
+                rb.linearVelocity = v;
+            }
+        }
     }
 
     private static float Width(BoxCollider2D c) => c ? c.size.x * Mathf.Abs(c.transform.lossyScale.x) : 0f;

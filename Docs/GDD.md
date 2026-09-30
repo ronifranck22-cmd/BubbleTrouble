@@ -9,7 +9,7 @@
 | **Engine** | Unity 6.3 LTS (`6000.3.20f1`), 2D, URP, Legacy Input Manager (`Input.GetKey`) |
 | **Orientation** | Landscape, fixed single-screen playfield — camera never moves |
 | **Session length** | 30 seconds – 10 minutes |
-| **Document version** | v1.4 — 2026-09-30 |
+| **Document version** | v1.5 — 2026-09-30 |
 
 > Written before implementation. Sections below now describe the game as built; see the Changelog for how it evolved.
 
@@ -119,12 +119,12 @@ Uses the Legacy Input Manager (`Input.GetKey`), not the newer Input System packa
 
 A short Start screen before play begins — no settings menu beyond that. Start, GameOver and Win all share one visual theme — rounded pastel buttons, faint background bubbles, and the Cormorant Garamond font (§6) in place of the default UI font — but not the same background: Start uses a lavender-to-sky-blue gradient, while GameOver/Win use a visually distinct mint-to-light-blue gradient, so the end screens read as their own moment rather than a copy of the Start screen.
 
-1. **Start** — game title, "A/D or ←/→ to move · Space to shoot" instructions, a Start button, and "Press Space to start". `<` / `>` buttons let the player pick between two character skins (Classic, Skin2) before starting; the choice is **not** saved between sessions — it always resets to Classic.
+1. **Start** — game title, "A/D or ←/→ to move · Space to shoot" instructions, a Start button, and "Press Space to start". `<` / `>` buttons let the player pick between two character skins (Classic, Skin2) before starting; the choice persists through Restart/Play Again within the same play session (it's a static field), and resets to Classic on relaunch, or when exiting Play mode in the editor (Domain Reload clears the static field).
 2. **Playing (HUD)** — score, lives, level number. Plain UI Text, top of screen, in the original font (kept separate from the Start/end-screen theme so gameplay numbers stay quick to read). A small countdown line appears here while Time Freeze or Shield is active.
 3. **GameOver** — final score, high score (marks a new high score if beaten), the player's chosen character shown, Restart button, on the mint-to-light-blue gradient background.
 4. **Win** — shown after the last level. Same layout and info as GameOver, with a "Play Again" button.
 
-**Canvas:** `Scale With Screen Size`, not `Constant Pixel Size` — so the UI doesn't break at a different resolution.
+**Canvas:** `Scale With Screen Size`, not `Constant Pixel Size` — so the UI doesn't break at a different resolution. The title text uses Best Fit so it no longer clips on an unusually narrow window. The gameplay background re-fits to the camera whenever the aspect ratio changes, not only at level load, so it doesn't leave gaps after a resize mid-level (same idea as `ScreenBoundsFitter`, §7).
 
 ---
 
@@ -176,7 +176,7 @@ graph TD
 | Script | Responsibility |
 |---|---|
 | `GameManager` | Singleton. Score, lives, game state, fires `OnScoreChanged` / `OnLivesChanged` / `OnGameOver`; runs the Game Over freeze |
-| `AudioManager` | Singleton. One `AudioSource`, nine `AudioClip`s with per-clip volume, played via `PlayOneShot` so overlapping sounds don't cut each other off |
+| `AudioManager` | Singleton. One `AudioSource`, nine `AudioClip`s with per-clip volume, played via `PlayOneShot` so overlapping sounds don't cut each other off; the bubble-pop volume is tuned low enough that two bubbles popping in the same frame (a real case — bubbles no longer collide with each other, so they can overlap) don't clip together |
 | `LevelManager` | Reads the current `LevelConfig`, spawns bubbles and pickups, detects when the screen is clear, tells `GameManager` |
 | `UIManager` | Subscribes to `GameManager` events, updates score/lives/level text and the Start/GameOver/Win screens |
 | `Player` | Reads input, clamps movement, triggers `ProjectilePool` on shoot, handles invulnerability and the Shield tint |
@@ -186,7 +186,7 @@ graph TD
 | `PlayerSkin` | `ScriptableObject` holding one skin's front/back/side sprites |
 | `CharacterSelectUI` | `<` / `>` picker on the Start screen; sets the skin `Player` and the result screens use |
 | `LifePickup` / `TimeFreezePickup` / `ShieldPickup` | Trigger colliders spawned by `LevelManager`; grant an extra life, freeze all bubbles, or grant temporary contact immunity |
-| `ScreenBoundsFitter` | Keeps the arena walls on the camera's actual visible edge at any aspect ratio, so bubbles and the player always share the same bounds |
+| `ScreenBoundsFitter` | Keeps the arena walls on the camera's actual visible edge at any aspect ratio, so bubbles and the player always share the same bounds; also pulls back inside any bubble or pickup left stranded outside the new bounds when the window shrinks mid-level, and refits the gameplay background to the camera on the same check |
 | `PowerUpStatusUI` | HUD countdown text while Time Freeze or Shield is active |
 
 **Key decisions:**
@@ -261,3 +261,4 @@ Three things beyond this original list were added along the way: a full Start/Ga
 | v1.2 | 2026-09-28 | §3 parameters filled in with real code values; §6 Player row updated to reflect implemented sprites, SFX/Music explicitly deferred. |
 | v1.3 | 2026-09-29 | All §8.2 polish items implemented and checked off (Time Freeze, Shield, character skin selection, extra-life pickup, projectile trail, arrowhead sprite). Start/GameOver/Win screens redesigned with a shared pastel theme and a licensed font (§5, §6); GameOver/Win given their own distinct gradient background instead of reusing Start's. Bubble-bubble collisions disabled to fix erratic bounces; arena walls now track the camera at any aspect ratio (`ScreenBoundsFitter`, §7) after the same bug was found near the screen edges. Post-processing removed from the URP pipeline for truer, more saturated colours. Added a brief freeze before the Game Over screen. Pickups now also re-roll periodically mid-level, not just at level start (§3). §3, §5–§8 updated to match. |
 | v1.4 | 2026-09-30 | Sound effects added via a new `AudioManager` (§6, §7): shoot, bubble pop, player hit, the three pickups, level clear, Game Over, and Win — 9 clips, self-synthesised (not downloaded) after the planned CC0 source turned out to be network-blocked, with per-clip volume to balance them against each other. Background music remains deferred/out of scope. §3, §6–§8 updated to match. |
+| v1.5 | 2026-09-30 | QA pass across window sizes/aspect ratios and a set of gameplay edge cases (following up on external feedback about UI breaking under `Constant Pixel Size` scaling — confirmed this project already uses `Scale With Screen Size`, §5). Found and fixed: the Start screen title clipping on very narrow windows (now Best Fit); the gameplay background not re-fitting to the camera after a resize mid-level; bubbles/pickups getting stranded outside the arena if the window shrinks mid-level (`ScreenBoundsFitter` now pulls them back in, §7); two bubble-pop sounds overlapping in the same frame clipping together (bubble-pop volume lowered). Also clarified (not changed): the character skin choice persists through Restart/Play Again within a play session, resetting to Classic only on relaunch or on exiting Play mode in the editor (§5) — documented as the actual, and better, behaviour rather than changed to force a reset. Full playthrough to Win, high-score handling, power-up stacking/extension (Shield-on-Shield, Freeze-on-Freeze, both at once), and Restart/Singleton robustness all verified with no issues. |

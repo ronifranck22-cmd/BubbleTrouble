@@ -180,6 +180,14 @@ public class LevelManager : MonoBehaviour
         takenX.Add(position.x);
     }
 
+    // Re-covers the camera with the current level's background after an aspect
+    // change mid-level (ScreenBoundsFitter calls this).
+    public void RefitBackground()
+    {
+        if (backgroundRenderer != null)
+            SetBackground(backgroundRenderer.sprite);
+    }
+
     private void SetBackground(Sprite sprite)
     {
         if (sprite == null || backgroundRenderer == null) return;
