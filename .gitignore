@@ -24,3 +24,7 @@ UserSettings/
 
 # Game view screenshots taken while testing (kept local, not part of the project)
 Screenshots/
+
+# Unity MCP dev-tooling DLLs (needed locally by the editor tool, not part of the game)
+Assets/Plugins/NuGet/
+Assets/Plugins/NuGet.meta

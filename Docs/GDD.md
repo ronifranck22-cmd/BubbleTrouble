@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Working title** | Bubble Trouble: Retro Remake (`BubbleTrouble`) |
+| **Working title** | Bubble Trouble (`BubbleTrouble`) |
 | **Team** | Roni Franck |
 | **Genre** | Arcade / physics bubble-shooter / single-screen split-and-clear |
 | **Target platform** | PC (macOS), standalone |
@@ -73,7 +73,7 @@ stateDiagram-v2
 | Invulnerability window | `invulnDuration` | 1.0 s | skipped on the final hit — see Game Over freeze below |
 | Projectile speed | `speed` | 8 | |
 | Bubble sizes | `BubbleConfig.radius` | 3 tiers | one sprite, scaled per size, tinted per size |
-| Bubble bounce | `Physics Material 2D.bounciness` | high (~0.9) | |
+| Bubble bounce | `Physics Material 2D.bounciness` | 1.0 (perfectly elastic) | friction 0 |
 | Bubble-bubble collisions | Physics2D layer matrix | disabled | prevents erratic bounce/launch behaviour between two bubbles |
 | Bubble score | `BubbleConfig.score` | smallest = most points | |
 | Levels | `LevelConfig[]` | 5 | one list entry per level, each with its own background |
