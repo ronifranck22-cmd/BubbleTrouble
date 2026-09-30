@@ -55,6 +55,7 @@ public class Bubble : MonoBehaviour
     // Called by Projectile.OnTriggerEnter2D when this bubble gets hit.
     public void Pop()
     {
+        AudioManager.Instance?.PlayBubblePop();
         GameManager.Instance.AddScore(config.score);
 
         if (config.nextSizeDown != null)

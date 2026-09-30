@@ -192,6 +192,7 @@ public class Player : MonoBehaviour
             activeProjectile.transform.position = transform.position + Vector3.up * shootOffsetY;
             activeProjectile.transform.rotation = Quaternion.identity;
             activeProjectile.SetActive(true);
+            AudioManager.Instance?.PlayShoot();
         }
     }
 

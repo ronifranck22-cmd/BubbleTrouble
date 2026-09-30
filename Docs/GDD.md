@@ -9,7 +9,7 @@
 | **Engine** | Unity 6.3 LTS (`6000.3.20f1`), 2D, URP, Legacy Input Manager (`Input.GetKey`) |
 | **Orientation** | Landscape, fixed single-screen playfield — camera never moves |
 | **Session length** | 30 seconds – 10 minutes |
-| **Document version** | v1.3 — 2026-09-29 |
+| **Document version** | v1.4 — 2026-09-30 |
 
 > Written before implementation. Sections below now describe the game as built; see the Changelog for how it evolved.
 
@@ -61,6 +61,7 @@ stateDiagram-v2
 - **Pickups** can spawn alongside a level's bubbles, each with its own independent chance: a heart (extra life), a snowflake (Time Freeze — holds every bubble in place for a few seconds), and a shield (temporary contact immunity). Never spawn on top of each other or right next to the player. Beyond the start-of-level roll, `LevelManager` also re-rolls every few seconds through the level (at half the start-of-level chances), so a level that started with no pickups isn't stuck that way, capped so the screen never has too many uncollected pickups at once.
 - **Level clear:** no bubbles left → next level loads, or the Win screen if it was the last one.
 - **Game over:** lives reach 0 → the game freezes briefly (`gameOverDelay`) so the hit is readable, then the Game Over screen appears. High score saved via `PlayerPrefs` if beaten.
+- **Audio feedback** plays for every moment above — shooting, a bubble popping/splitting, getting hit (or blocked by Shield, which stays silent), each pickup, a level clearing, Game Over, and Win — through `AudioManager` (§6, §7). The Game Over sound plays through the freeze, since `AudioSource` isn't affected by `Time.timeScale`.
 
 ### Parameters
 
@@ -140,7 +141,8 @@ A short Start screen before play begins — no settings menu beyond that. Start,
 | Pickups | Implemented | Generated locally — heart (extra life), snowflake (Time Freeze), shield (Shield) |
 | Start/GameOver/Win theme | Implemented | Generated locally — rounded button/arrow sprites, soft background bubbles, two gradient backgrounds (lavender-to-sky-blue for Start, mint-to-light-blue for GameOver/Win) |
 | UI font | Implemented | **Cormorant Garamond**, [Google Fonts](https://fonts.google.com/specimen/Cormorant+Garamond), **SIL Open Font Licence 1.1** (licence file kept alongside the font in `Assets/Fonts/`) |
-| SFX / Music | Deferred | Planned: CC0 sources (Kenney.nl / OpenGameArt) — deferred, only if time remains |
+| SFX | Implemented | Generated locally — 9 short retro-style effects synthesised in Python (sine/square/triangle waves with simple envelopes), not downloaded: the original plan (CC0 packs from Kenney.nl) hit a network access restriction, and self-made effects sidestep licensing entirely while fitting the arcade-retro tone. Covers shoot, bubble pop, player hit, heart/Shield/Time Freeze pickups, level clear, Game Over, and Win |
+| Music | Deferred | No background music track — out of scope for this round |
 
 **Technical art rules:** import sprites as `Sprite (2D and UI)`, not `Default`. Same Pixels Per Unit for all bubble sizes, so one sprite works for all three via `Transform` scale.
 
@@ -174,6 +176,7 @@ graph TD
 | Script | Responsibility |
 |---|---|
 | `GameManager` | Singleton. Score, lives, game state, fires `OnScoreChanged` / `OnLivesChanged` / `OnGameOver`; runs the Game Over freeze |
+| `AudioManager` | Singleton. One `AudioSource`, nine `AudioClip`s with per-clip volume, played via `PlayOneShot` so overlapping sounds don't cut each other off |
 | `LevelManager` | Reads the current `LevelConfig`, spawns bubbles and pickups, detects when the screen is clear, tells `GameManager` |
 | `UIManager` | Subscribes to `GameManager` events, updates score/lives/level text and the Start/GameOver/Win screens |
 | `Player` | Reads input, clamps movement, triggers `ProjectilePool` on shoot, handles invulnerability and the Shield tint |
@@ -236,7 +239,7 @@ Also used, but not required: `ScriptableObject` data (`BubbleConfig`, `LevelConf
 - [x] Rope/line visual behind the projectile (`LineRenderer`)
 - [x] Proper arrowhead shape for the projectile sprite
 
-Two things beyond this original list were added along the way: a full Start/GameOver/Win visual redesign (§5, §6), and a fix so the arena bounds always match the camera at any aspect ratio (§7, `ScreenBoundsFitter`) after erratic bubble behaviour was found near the edges of the screen.
+Three things beyond this original list were added along the way: a full Start/GameOver/Win visual redesign (§5, §6); a fix so the arena bounds always match the camera at any aspect ratio (§7, `ScreenBoundsFitter`) after erratic bubble behaviour was found near the edges of the screen; and a full set of sound effects (§6, `AudioManager`) — SFX had originally been filed as "deferred, only if time remains" (§8.3-adjacent, see the v1.2/v1.3 changelog entries), but time remained.
 
 ### 8.3 Explicitly out of scope — **not** being built
 
@@ -257,3 +260,4 @@ Two things beyond this original list were added along the way: a full Start/Game
 | v1.1 | 2026-09-27 | §8.1 checklist updated after first end-to-end Play-mode test. |
 | v1.2 | 2026-09-28 | §3 parameters filled in with real code values; §6 Player row updated to reflect implemented sprites, SFX/Music explicitly deferred. |
 | v1.3 | 2026-09-29 | All §8.2 polish items implemented and checked off (Time Freeze, Shield, character skin selection, extra-life pickup, projectile trail, arrowhead sprite). Start/GameOver/Win screens redesigned with a shared pastel theme and a licensed font (§5, §6); GameOver/Win given their own distinct gradient background instead of reusing Start's. Bubble-bubble collisions disabled to fix erratic bounces; arena walls now track the camera at any aspect ratio (`ScreenBoundsFitter`, §7) after the same bug was found near the screen edges. Post-processing removed from the URP pipeline for truer, more saturated colours. Added a brief freeze before the Game Over screen. Pickups now also re-roll periodically mid-level, not just at level start (§3). §3, §5–§8 updated to match. |
+| v1.4 | 2026-09-30 | Sound effects added via a new `AudioManager` (§6, §7): shoot, bubble pop, player hit, the three pickups, level clear, Game Over, and Win — 9 clips, self-synthesised (not downloaded) after the planned CC0 source turned out to be network-blocked, with per-clip volume to balance them against each other. Background music remains deferred/out of scope. §3, §6–§8 updated to match. |

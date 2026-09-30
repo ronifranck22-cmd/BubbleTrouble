@@ -9,6 +9,7 @@ public class TimeFreezePickup : MonoBehaviour
         if (!other.CompareTag("Player")) return;
 
         LevelManager.Instance.FreezeBubbles(duration);
+        AudioManager.Instance?.PlayFreezePickup();
         Destroy(gameObject);
     }
 }

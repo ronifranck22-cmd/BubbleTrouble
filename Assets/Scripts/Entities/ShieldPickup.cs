@@ -11,6 +11,7 @@ public class ShieldPickup : MonoBehaviour
         Player player = other.GetComponent<Player>();
         if (player != null)
             player.ActivateShield(duration);
+        AudioManager.Instance?.PlayShieldPickup();
         Destroy(gameObject);
     }
 }

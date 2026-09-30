@@ -73,8 +73,11 @@ public class GameManager : MonoBehaviour
         Lives--;
         OnLivesChanged?.Invoke(Lives);
 
+        // Final hit plays only the Game Over sound (below), not both at once.
         if (Lives <= 0)
             TriggerGameOver();
+        else
+            AudioManager.Instance?.PlayPlayerHit();
     }
 
     public void GainLife()
@@ -96,6 +99,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        AudioManager.Instance?.PlayLevelClear();
         State = GameState.LevelClear;
         CurrentLevelIndex++;
         OnLevelChanged?.Invoke(CurrentLevelIndex);
@@ -112,6 +116,7 @@ public class GameManager : MonoBehaviour
     {
         State = GameState.GameOver;
         SaveHighScoreIfNeeded();
+        AudioManager.Instance?.PlayGameOver(); // plays through the freeze (timeScale doesn't affect audio)
         StartCoroutine(GameOverPause());
     }
 
@@ -136,6 +141,7 @@ public class GameManager : MonoBehaviour
     {
         State = GameState.Win;
         SaveHighScoreIfNeeded();
+        AudioManager.Instance?.PlayWin();
         OnWin?.Invoke();
     }
 

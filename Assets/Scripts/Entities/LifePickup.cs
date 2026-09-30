@@ -7,6 +7,7 @@ public class LifePickup : MonoBehaviour
         if (!other.CompareTag("Player")) return;
 
         GameManager.Instance.GainLife();
+        AudioManager.Instance?.PlayPickup();
         Destroy(gameObject);
     }
 }
