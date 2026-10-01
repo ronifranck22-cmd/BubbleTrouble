@@ -9,9 +9,8 @@
 | **Engine** | Unity 6.3 LTS (`6000.3.20f1`), 2D, URP, Legacy Input Manager (`Input.GetKey`) |
 | **Orientation** | Landscape, fixed single-screen playfield — camera never moves |
 | **Session length** | 30 seconds – 10 minutes |
-| **Document version** | v1.3 — 2026-09-30 |
 
-> Written before implementation. Sections below now describe the game as built; see the Changelog for how it evolved.
+> Written before implementation. Sections below now describe the game as built.
 
 ---
 
@@ -21,19 +20,17 @@ A single player stands at the bottom of a fixed playfield, moving left/right and
 
 ### Design pillars
 
-1. **Real physics, not scripted movement.** Bubbles use `Rigidbody2D` and a bouncy `Physics Material 2D` — no hand-made bounce paths. *Rejects:* waypoint or tween-based bubble movement.
-2. **Every threat is visible.** All danger is on screen — nothing spawns off-screen or hidden. *Rejects:* off-screen spawners, random instant-death events, hidden hazards.
-3. **Few features, but working well.** The core list in §8.1 is short on purpose. *Rejects:* breakable terrain, multiplayer, hand-made level layouts.
+1. **Real physics, not scripted movement.** *Rejects:* waypoint or tween-based bubble movement.
+2. **Every threat is visible.** *Rejects:* off-screen spawners, hidden hazards.
+3. **Few features, but working well.** *Rejects:* breakable terrain, multiplayer, hand-made level layouts.
 
 ---
 
 ## 2. Reference & Inspiration
 
-- **Primary reference:** *Bubble Trouble* / *Bubble Struggle* (Kranx Productions, ~2000). Playable copies: [rebubbled.com/play/bs1_html](https://www.rebubbled.com/play/bs1_html), [miniclipoldgames.com/en/bubble-struggle](https://miniclipoldgames.com/en/bubble-struggle).
-- **Taking:** the split-on-hit bubble behaviour and bounce physics, the single-screen arena, the single-shot upward weapon, a level sequence with bigger/more starting bubbles each round, and a win screen after the last level.
-- **Not taking:** breakable terrain, and two-player mode — this build is solo-only from the start.
-
-(Art asset sourcing — including the player character and the original's harpoon-trail visual — is a licensing question, not a design one, and is covered in §6.)
+- **Primary reference:** *Bubble Trouble* / *Bubble Struggle* (Kranx Productions, ~2000).
+- **Taking:** split-on-hit bubbles and bounce physics, the single-screen arena, the single-shot upward weapon, level progression, a win screen.
+- **Not taking:** breakable terrain, two-player mode.
 
 ---
 
@@ -53,15 +50,15 @@ stateDiagram-v2
 
 **Moment-to-moment rules** — true on every frame of `Playing`:
 
-- The player only moves **left/right**. Position is clamped in code — no `Rigidbody2D` on the player. The clamp uses the camera's actual visible edge, and so does the arena's wall placement (`ScreenBoundsFitter`, §7) — the player and the bubbles always share the same bounds, at any window size or aspect ratio.
-- One button fires a `Projectile` from an object pool, straight up, until it hits a bubble or the ceiling. Only one projectile on screen at a time. The projectile is arrowhead-shaped with a short `LineRenderer` trail behind it.
-- Bubbles come in three sizes (large/medium/small), each set up in a `BubbleConfig`, tinted a different colour per size. Hitting a large or medium bubble splits it into two smaller ones; hitting a small bubble clears it and gives points.
-- Bubbles bounce off walls/floor/ceiling automatically, using `Rigidbody2D` and a bouncy `Physics Material 2D`. Bubble-bubble collisions are disabled (Physics2D layer matrix) — two bubbles pass through each other instead of deflecting, which removed erratic launch-style bounces.
-- Touching a bubble costs one life, then gives a short invulnerability window (flicker) so it can't happen twice in one frame — unless the Shield power-up is active (§8.2), which blocks the life loss entirely and shows a steady tint instead of the flicker.
-- **Pickups** can spawn alongside a level's bubbles, each with its own independent chance: a heart (extra life), a snowflake (Time Freeze — holds every bubble in place for a few seconds), and a shield (temporary contact immunity). Never spawn on top of each other or right next to the player. Beyond the start-of-level roll, `LevelManager` also re-rolls every few seconds through the level (at half the start-of-level chances), so a level that started with no pickups isn't stuck that way, capped so the screen never has too many uncollected pickups at once.
-- **Level clear:** no bubbles left → next level loads, or the Win screen if it was the last one.
-- **Game over:** lives reach 0 → the game freezes briefly (`gameOverDelay`) so the hit is readable, then the Game Over screen appears. High score saved via `PlayerPrefs` if beaten.
-- **Audio feedback** plays for every moment above — shooting, a bubble popping/splitting, getting hit (or blocked by Shield, which stays silent), each pickup, a level clearing, Game Over, and Win — through `AudioManager` (§6, §7). The Game Over sound plays through the freeze, since `AudioSource` isn't affected by `Time.timeScale`.
+- Player moves **left/right only**, clamped to the camera's visible edge (same bounds the arena walls use, `ScreenBoundsFitter`, §7).
+- One button fires a `Projectile` straight up from an object pool; only one on screen at a time.
+- Bubbles come in three sizes; hitting a large/medium bubble splits it into two smaller ones, hitting a small one clears it and scores.
+- Bubbles bounce via `Rigidbody2D` + a bouncy `Physics Material 2D`; bubble-bubble collisions are disabled.
+- Touching a bubble costs a life, then gives brief invulnerability — unless Shield is active (§8.2), which blocks it entirely.
+- **Pickups:** a heart (extra life), a snowflake (Time Freeze), and a shield (contact immunity) — spawn at level start and re-roll periodically through the level.
+- **Level clear:** next level loads, or the Win screen on the last one.
+- **Game over:** brief freeze, then the Game Over screen; high score saved via `PlayerPrefs`.
+- **Audio** plays for every action above, through `AudioManager` (§6, §7).
 
 ### Parameters
 
@@ -94,16 +91,14 @@ stateDiagram-v2
 
 ## 4. Controls & Input
 
-Two actions: **Move** (left/right) and **Shoot**.
+Keyboard only — no gamepad or touch support (mobile is out of scope, §8.3).
 
-| Action | Keyboard | Gamepad | Touch |
-|---|---|---|---|
-| Move left / right | `A` / `D`, or `←` / `→` | — not supported | — not supported |
-| Shoot | `Space` | — not supported | — not supported |
+| Action | Keys |
+|---|---|
+| Move left / right | `A` / `D`, or `←` / `→` |
+| Shoot | `Space` |
 
 The Start screen also has two on-screen buttons (`<` / `>`, mouse/touch only) to pick between the two character skins — see §5.
-
-Gamepad and touch aren't supported for gameplay — mobile is out of scope (see header table and §8.3).
 
 **Edge cases:**
 
@@ -117,20 +112,20 @@ Uses the Legacy Input Manager (`Input.GetKey`), not the newer Input System packa
 
 ## 5. Screens & UI
 
-A short Start screen before play begins — no settings menu beyond that. Start, GameOver and Win share one visual theme (rounded pastel buttons, faint background bubbles, Cormorant Garamond font, §6). Start uses a lavender-to-sky-blue gradient background; GameOver/Win use a mint-to-light-blue gradient.
+A short Start screen before play begins, no settings menu. Start, GameOver and Win share one visual theme (pastel buttons, background bubbles, Cormorant Garamond font, §6); Start uses a lavender-to-sky-blue gradient, GameOver/Win use mint-to-light-blue.
 
-1. **Start** — game title, "A/D or ←/→ to move · Space to shoot" instructions, a Start button, and "Press Space to start". `<` / `>` buttons let the player pick between two character skins (Classic, Skin2) before starting; the choice persists through Restart/Play Again within the same play session (it's a static field), and resets to Classic on relaunch, or when exiting Play mode in the editor (Domain Reload clears the static field).
-2. **Playing (HUD)** — score, lives, level number. Plain UI Text, top of screen, in the original font (kept separate from the Start/end-screen theme so gameplay numbers stay quick to read). A small countdown line appears here while Time Freeze or Shield is active.
-3. **GameOver** — final score, high score (marks a new high score if beaten), the player's chosen character shown, Restart button, on the mint-to-light-blue gradient background.
-4. **Win** — shown after the last level. Same layout and info as GameOver, with a "Play Again" button.
+1. **Start** — title, instructions, Start button. `<` / `>` picks between two character skins; the choice persists through Restart/Play Again, resets to Classic on relaunch.
+2. **Playing (HUD)** — score, lives, level number; a countdown line while Time Freeze/Shield is active.
+3. **GameOver** — final score, high score, chosen character shown, Restart button.
+4. **Win** — same as GameOver, with a "Play Again" button.
 
-**Canvas:** `Scale With Screen Size`, not `Constant Pixel Size` — so the UI doesn't break at a different resolution. The title text uses Best Fit so it no longer clips on an unusually narrow window. The gameplay background re-fits to the camera whenever the aspect ratio changes, not only at level load, so it doesn't leave gaps after a resize mid-level (same idea as `ScreenBoundsFitter`, §7).
+**Canvas:** `Scale With Screen Size` (not `Constant Pixel Size`), so the UI scales correctly at any resolution.
 
 ---
 
 ## 6. Art & Audio
 
-**Licence note.** This project uses two kinds of art: (a) simple shapes made locally, no external source, and (b) downloaded assets under an open licence, credited below. **No art from the original Bubble Trouble / Bubble Struggle game is used** — that art belongs to its original developers and was not copied or referenced (see §2).
+**Licence note.** Most art and audio is made locally; a few downloaded assets are used under an open licence, credited below.
 
 | Asset | Status | Source / licence |
 |---|---|---|
@@ -141,7 +136,7 @@ A short Start screen before play begins — no settings menu beyond that. Start,
 | Pickups | Implemented | Generated locally — heart (extra life), snowflake (Time Freeze), shield (Shield) |
 | Start/GameOver/Win theme | Implemented | Generated locally — rounded button/arrow sprites, soft background bubbles, two gradient backgrounds (lavender-to-sky-blue for Start, mint-to-light-blue for GameOver/Win) |
 | UI font | Implemented | **Cormorant Garamond**, [Google Fonts](https://fonts.google.com/specimen/Cormorant+Garamond), **SIL Open Font Licence 1.1** (licence file kept alongside the font in `Assets/Fonts/`) |
-| SFX | Implemented | Generated locally — 9 short retro-style effects synthesised in Python (sine/square/triangle waves with simple envelopes), not downloaded: the original plan (CC0 packs from Kenney.nl) hit a network access restriction, and self-made effects sidestep licensing entirely while fitting the arcade-retro tone. Covers shoot, bubble pop, player hit, heart/Shield/Time Freeze pickups, level clear, Game Over, and Win |
+| SFX | Implemented | Generated locally — 9 short retro-style effects synthesised in Python, not downloaded. Covers shoot, bubble pop, player hit, pickups, level clear, Game Over, and Win |
 | Music | Deferred | No background music track — out of scope for this round |
 
 **Technical art rules:** import sprites as `Sprite (2D and UI)`, not `Default`. Same Pixels Per Unit for all bubble sizes, so one sprite works for all three via `Transform` scale.
@@ -159,7 +154,7 @@ graph TD
     GM["GameManager (Singleton)<br/>score · lives · game state · events"]
     LM["LevelManager<br/>reads LevelConfig · spawns bubbles + pickups · detects clear"]
     UI["UIManager<br/>subscribes to GameManager events"]
-    PP["ProjectilePool<br/>object pool, sits on Player"]
+    PP["ProjectilePool<br/>singleton object pool"]
     PL["Player<br/>movement · shoot input · shield"]
     BB["Bubble<br/>physics · split on hit · freeze"]
     BC["BubbleConfig (ScriptableObject)<br/>per-size tuning"]
@@ -175,29 +170,29 @@ graph TD
 
 | Script | Responsibility |
 |---|---|
-| `GameManager` | Singleton. Score, lives, game state, fires `OnScoreChanged` / `OnLivesChanged` / `OnGameOver`; runs the Game Over freeze |
-| `AudioManager` | Singleton. One `AudioSource`, nine `AudioClip`s with per-clip volume, played via `PlayOneShot` so overlapping sounds don't cut each other off; the bubble-pop volume is tuned low enough that two bubbles popping in the same frame (a real case — bubbles no longer collide with each other, so they can overlap) don't clip together |
-| `LevelManager` | Reads the current `LevelConfig`, spawns bubbles and pickups, detects when the screen is clear, tells `GameManager` |
-| `UIManager` | Subscribes to `GameManager` events, updates score/lives/level text and the Start/GameOver/Win screens |
-| `Player` | Reads input, clamps movement, triggers `ProjectilePool` on shoot, handles invulnerability and the Shield tint |
-| `ProjectilePool` | Object pool for projectiles; sits on the Player |
-| `Bubble` | Physics-driven; splits into two smaller bubbles on hit, or clears and scores; can be frozen (`Kinematic`) by Time Freeze |
-| `BubbleConfig` / `LevelConfig` | `ScriptableObject` data — no gameplay tuning lives in code |
-| `PlayerSkin` | `ScriptableObject` holding one skin's front/back/side sprites |
-| `CharacterSelectUI` | `<` / `>` picker on the Start screen; sets the skin `Player` and the result screens use |
-| `LifePickup` / `TimeFreezePickup` / `ShieldPickup` | Trigger colliders spawned by `LevelManager`; grant an extra life, freeze all bubbles, or grant temporary contact immunity |
-| `ScreenBoundsFitter` | Keeps the arena walls on the camera's actual visible edge at any aspect ratio, so bubbles and the player always share the same bounds; also pulls back inside any bubble or pickup left stranded outside the new bounds when the window shrinks mid-level, and refits the gameplay background to the camera on the same check |
-| `PowerUpStatusUI` | HUD countdown text while Time Freeze or Shield is active |
+| `GameManager` | Singleton. Score, lives, game state; fires events; runs the Game Over freeze |
+| `AudioManager` | Singleton. Plays 9 SFX clips via `PlayOneShot`, tuned so overlapping sounds don't clip |
+| `LevelManager` | Reads `LevelConfig`, spawns bubbles and pickups, detects level clear |
+| `UIManager` | Subscribes to `GameManager` events, updates the HUD and screens |
+| `Player` | Input, movement clamp, shoot, invulnerability, Shield tint |
+| `ProjectilePool` | Singleton object pool for projectiles, called by `Player` |
+| `Bubble` | Physics-driven; splits on hit or clears and scores; can be frozen by Time Freeze |
+| `BubbleConfig` / `LevelConfig` | `ScriptableObject` data — no gameplay tuning in code |
+| `PlayerSkin` | `ScriptableObject` holding one skin's sprites |
+| `CharacterSelectUI` | `<` / `>` picker on the Start screen |
+| `LifePickup` / `TimeFreezePickup` / `ShieldPickup` | Trigger colliders granting a life, freezing bubbles, or granting contact immunity |
+| `ScreenBoundsFitter` | Keeps arena walls and background matched to the camera at any aspect ratio |
+| `PowerUpStatusUI` | HUD countdown while Time Freeze or Shield is active |
 
 **Key decisions:**
 
-- **No `Rigidbody2D` on the Player.** Movement is left/right only, so physics isn't needed.
-- **One Bubble prefab, not three.** All sizes share one prefab and sprite, just scaled and tinted differently.
-- **Only the Projectile is pooled, not the Bubbles.** Few bubbles exist at once, so pooling them isn't worth it.
-- **`LevelManager` is separate from `GameManager`.** Keeps `GameManager` smaller and easier to read.
-- **Levels are data (`LevelConfig` list), not code.** Adding a level means adding one asset, not writing new code.
-- **Time Freeze uses `Kinematic`, not `simulated = false`.** The latter also disables the collider, which would make a frozen bubble un-shootable — the opposite of the intended behaviour.
-- **Arena walls are repositioned at runtime, not fixed in the scene.** `ScreenBoundsFitter` recomputes them from the camera every time the aspect ratio changes, instead of hand-placing them for one resolution.
+- **No `Rigidbody2D` on the Player** — movement is left/right only.
+- **One Bubble prefab, not three** — scaled and tinted per size.
+- **Only the Projectile is pooled** — too few bubbles at once to need it.
+- **`LevelManager` is separate from `GameManager`** — keeps each one smaller.
+- **Levels are data (`LevelConfig` list), not code** — a new level is one asset.
+- **Time Freeze uses `Kinematic`, not `simulated = false`** — the latter disables the collider too, making a frozen bubble un-shootable.
+- **Arena walls are repositioned at runtime** — `ScreenBoundsFitter` recomputes them from the camera on any aspect-ratio change.
 
 ### Course concepts this project demonstrates
 
@@ -218,7 +213,7 @@ From the course's list ("object pools, coroutines, singletons... at least some o
 - [x] Shoot: single pooled projectile, straight up, destroyed at ceiling
 - [x] Bubble physics (bounce off walls/floor via `Rigidbody2D` + `Physics Material 2D`)
 - [x] Split-on-hit chain (large → medium → small → cleared + score)
-- [x] Bubble-player contact costs a life, with brief invulnerability after — uses `OnTriggerStay2D`, so continued contact after invulnerability ends costs another life
+- [x] Bubble-player contact costs a life, with brief invulnerability after
 - [x] Score, lives, level number in UI; `GameManager` as the single source of truth
 - [x] High score via `PlayerPrefs` — saved, shown on GameOver and Win, marked "NEW High Score" when beaten
 - [x] Level progression via `LevelConfig` list (5 levels)
@@ -230,7 +225,7 @@ From the course's list ("object pools, coroutines, singletons... at least some o
 
 - [x] Time Freeze power-up
 - [x] Shield power-up
-- [x] Character selection — ended up as two full alternate skins (front/back/side art supplied ready-made), not a code colour-tint as originally planned
+- [x] Character selection — two full alternate skins instead of a planned code colour-tint
 - [x] Extra life pickup (heart)
 - [x] Rope/line visual behind the projectile (`LineRenderer`)
 - [x] Proper arrowhead shape for the projectile sprite
@@ -240,12 +235,12 @@ From the course's list ("object pools, coroutines, singletons... at least some o
 
 ### 8.3 Explicitly out of scope — **not** being built
 
-- **Breakable walls.** Would need hand-built level geometry.
-- **Ladders / vertical movement.** Left/right only, by design.
-- **Two-player mode.** Solo project.
-- **More than two character skins.** Already have two; more would need new art.
-- **Extra weapons.** Not part of the core loop.
-- **Mobile build.** Not required for the assignment.
+- Breakable walls.
+- Ladders / vertical movement.
+- Two-player mode.
+- More than two character skins.
+- Extra weapons.
+- Mobile build.
 
 ---
 
